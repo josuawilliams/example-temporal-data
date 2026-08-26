@@ -51,14 +51,6 @@ services:
       - "8000:8000"
     env_file:
       - .env
-    environment:
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: laravel
-      DB_USERNAME: laravel
-      DB_PASSWORD: secret
-      TEMPORAL_ADDRESS: temporal:7233
     depends_on:
       postgres:
         condition: service_healthy
@@ -74,14 +66,6 @@ services:
     command: php artisan temporal:run
     env_file:
       - .env
-    environment:
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: laravel
-      DB_USERNAME: laravel
-      DB_PASSWORD: secret
-      TEMPORAL_ADDRESS: temporal:7233
     depends_on:
       postgres:
         condition: service_healthy
