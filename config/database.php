@@ -99,6 +99,25 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
+        /*
+        | Read-only connection to the reporting database that holds the sr_*
+        | tables. Kept separate from the default connection so application
+        | state (sessions, cache, jobs) never touches this database.
+        */
+        'reporting' => [
+            'driver' => 'pgsql',
+            'host' => env('REPORTING_DB_HOST', 'host.docker.internal'),
+            'port' => env('REPORTING_DB_PORT', '5432'),
+            'database' => env('REPORTING_DB_DATABASE', 'dummy_db'),
+            'username' => env('REPORTING_DB_USERNAME', 'postgres'),
+            'password' => env('REPORTING_DB_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('REPORTING_DB_SSLMODE', 'prefer'),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),

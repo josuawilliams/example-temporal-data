@@ -5,7 +5,9 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Temporal\WorkerFactory;
 use App\Temporal\Workflows\ExampleWorkflow;
+use App\Temporal\Workflows\ReportWorkflow;
 use App\Temporal\Activities\ExampleActivity;
+use App\Temporal\Activities\ReportActivity;
 
 class TemporalRun extends Command
 {
@@ -21,8 +23,11 @@ class TemporalRun extends Command
 
         $worker = $factory->newWorker(taskQueue: $taskQueue);
 
-        $worker->registerWorkflowTypes(ExampleWorkflow::class);
-        $worker->registerActivityImplementations(new ExampleActivity());
+        $worker->registerWorkflowTypes(ExampleWorkflow::class, ReportWorkflow::class);
+        $worker->registerActivityImplementations(
+            new ExampleActivity(),
+            new ReportActivity(),
+        );
 
         error_log('Temporal worker started on task queue: ' . $taskQueue);
 

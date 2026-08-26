@@ -6,6 +6,11 @@ server:
 
 temporal:
   address: ${TEMPORAL_ADDRESS}
+  # Activities run inside these PHP processes. With num_workers: 1 the three
+  # activities dispatched by Promise::all would still execute one after
+  # another, so the pool must be at least as large as the fan-out.
+  activities:
+    num_workers: 4
 
 logs:
   mode: development
