@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM spiralscout/roadrunner:2024.3 AS roadrunner
+FROM spiralscout/roadrunner:2025.1.5 AS roadrunner
 
 FROM php:8.3-fpm-alpine
 

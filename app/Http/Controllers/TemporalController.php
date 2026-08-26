@@ -12,11 +12,17 @@ use Ramsey\Uuid\Uuid;
 
 class TemporalController extends Controller
 {
+    private ?WorkflowClient $client = null;
+
     private function client(): WorkflowClient
     {
-        $serviceClient = ServiceClient::create(env('TEMPORAL_ADDRESS', 'temporal:7233'));
+        if ($this->client === null) {
+            $serviceClient = ServiceClient::create(config('temporal.address'));
 
-        return WorkflowClient::create($serviceClient);
+            $this->client = WorkflowClient::create($serviceClient);
+        }
+
+        return $this->client;
     }
 
     public function runExample(Request $request): JsonResponse
@@ -24,14 +30,16 @@ class TemporalController extends Controller
         $name = $request->input('name', 'World');
         $workflowId = 'example-' . Uuid::uuid4()->toString();
 
-        $workflow = $this->client()->newWorkflowStub(
+        $client = $this->client();
+
+        $workflow = $client->newWorkflowStub(
             ExampleWorkflow::class,
             WorkflowOptions::new()
                 ->withWorkflowId($workflowId)
-                ->withTaskQueue(env('TEMPORAL_TASK_QUEUE', 'default'))
+                ->withTaskQueue(config('temporal.task_queue'))
         );
 
-        $this->client()->start($workflow, $name);
+        $client->start($workflow, $name);
 
         return response()->json([
             'workflow_id' => $workflowId,

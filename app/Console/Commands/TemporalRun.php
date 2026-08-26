@@ -15,16 +15,16 @@ class TemporalRun extends Command
 
     public function handle(): void
     {
+        $taskQueue = config('temporal.task_queue');
+
         $factory = WorkerFactory::create();
 
-        $worker = $factory->newWorker(
-            taskQueue: env('TEMPORAL_TASK_QUEUE', 'default')
-        );
+        $worker = $factory->newWorker(taskQueue: $taskQueue);
 
         $worker->registerWorkflowTypes(ExampleWorkflow::class);
         $worker->registerActivityImplementations(new ExampleActivity());
 
-        error_log('Temporal worker started on task queue: ' . env('TEMPORAL_TASK_QUEUE', 'default'));
+        error_log('Temporal worker started on task queue: ' . $taskQueue);
 
         $factory->run();
     }
