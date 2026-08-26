@@ -31,23 +31,36 @@ class ReportWorkflow
     }
 
     #[WorkflowMethod]
-    public function run(int $limit = 100)
+    public function run(int $limit)
     {
         $startedAt = Workflow::now();
 
-        // Called without yield, so each returns a promise and the activity is
-        // dispatched immediately. Yielding one at a time here would serialise
-        // them and defeat the point.
-        $akta = $this->activity->fetchAkta($limit);
-        $angsuran = $this->activity->fetchAngsuran($limit);
-        $debitNote = $this->activity->fetchDebitNote($limit);
+        // Promise::all gagal cepat: begitu satu activity ditolak, seluruh
+        // promise langsung ditolak walau dua lainnya sudah berhasil.
+        // otherwise() mengubah penolakan jadi nilai normal, jadi satu
+        // tabel gagal tidak membuang hasil dua lainnya.
+        $toSafeResult = static fn (string $table) => static fn (\Throwable $e) => [
+            'table' => $table,
+            'error' => $e->getMessage(),
+        ];
 
-        // Single yield: the workflow resumes once all three have resolved.
-        // Order of results matches the order of the promises, not completion.
+        $akta = $this->activity->fetchAkta($limit)->otherwise($toSafeResult('sr_akta'));
+        $angsuran = $this->activity->fetchAngsuran($limit)->otherwise($toSafeResult('sr_angsuran'));
+        $debitNote = $this->activity->fetchDebitNote($limit)->otherwise($toSafeResult('sr_debit_note'));
+
         [$aktaResult, $angsuranResult, $debitNoteResult] = yield Promise::all([
             $akta,
             $angsuran,
             $debitNote,
+        ]);
+
+        // Workflow::getLogger() sadar replay: diam saat history sedang
+        // di-replay. Log::info() biasa akan terpicu berulang kali pada
+        // setiap replay dan mencetak ulang angka yang sudah dilog.
+        Workflow::getLogger()->info('report selesai diambil', [
+            'akta' => $aktaResult['sample_rows'] ?? ('error: ' . ($aktaResult['error'] ?? 'unknown')),
+            'angsuran' => $angsuranResult['sample_rows'] ?? ('error: ' . ($angsuranResult['error'] ?? 'unknown')),
+            'debit_note' => $debitNoteResult['sample_rows'] ?? ('error: ' . ($debitNoteResult['error'] ?? 'unknown')),
         ]);
 
         return [

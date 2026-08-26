@@ -118,6 +118,26 @@ return [
             'sslmode' => env('REPORTING_DB_SSLMODE', 'prefer'),
         ],
 
+        /*
+        | Holds the materialized views (mv_sr_*) that mirror the sr_* tables
+        | via postgres_fdw. Rows never pass through PHP: REFRESH runs
+        | entirely inside Postgres, this connection only issues the
+        | REFRESH statement.
+        */
+        'reporting_target' => [
+            'driver' => 'pgsql',
+            'host' => env('REPORTING_TARGET_DB_HOST', 'host.docker.internal'),
+            'port' => env('REPORTING_TARGET_DB_PORT', '5432'),
+            'database' => env('REPORTING_TARGET_DB_DATABASE', 'temp_db'),
+            'username' => env('REPORTING_TARGET_DB_USERNAME', 'postgres'),
+            'password' => env('REPORTING_TARGET_DB_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('REPORTING_TARGET_DB_SSLMODE', 'prefer'),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),

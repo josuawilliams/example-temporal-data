@@ -21,6 +21,10 @@ RUN apk add --no-cache \
 
 RUN docker-php-ext-install pdo pdo_pgsql bcmath mbstring sockets
 
+# 128M default is too small for report queries that hydrate tens of
+# thousands of rows into arrays before Eloquent even returns them.
+RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory-limit.ini
+
 RUN --mount=type=cache,target=/tmp/pear \
     MAKEFLAGS="-j$(nproc)" pecl install grpc \
     && docker-php-ext-enable grpc

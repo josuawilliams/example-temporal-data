@@ -16,4 +16,13 @@ interface ReportActivityInterface
 
     #[ActivityMethod]
     public function fetchDebitNote(int $limit): array;
+
+    #[ActivityMethod]
+    public function refreshAktaView(): array;
+
+    #[ActivityMethod]
+    public function refreshAngsuranView(): array;
+
+    #[ActivityMethod]
+    public function refreshDebitNoteView(): array;
 }

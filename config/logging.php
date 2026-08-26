@@ -135,6 +135,14 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'workflow' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/workflow.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'max_files' => 14,
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];
