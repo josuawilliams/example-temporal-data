@@ -1,0 +1,12 @@
+version: "3"
+
+server:
+  command: "php artisan temporal:run"
+  relay: "pipes"
+
+temporal:
+  address: ${TEMPORAL_ADDRESS}
+
+logs:
+  mode: development
+  level: info

@@ -1,38 +1,50 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     environment:
-      POSTGRES_DB: laravel
-      POSTGRES_USER: laravel
-      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: dummy_db
+      POSTGRES_PASSWORD: admin
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U laravel"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  temporal-postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: temporal
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: temporal_user
+    volumes:
+      - temporal_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal_user"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   temporal:
-    image: temporalio/auto-setup:1.24.2
+    image: temporalio/auto-setup:1.27.2
     ports:
       - "7233:7233"
       - "8080:8080"
     environment:
       - DB=postgres12
       - DB_PORT=5432
-      - POSTGRES_USER=laravel
-      - POSTGRES_PWD=secret
-      - POSTGRES_SEEDS=postgres
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      - POSTGRES_USER=temporal_user
+      - POSTGRES_PWD=admin
+      - POSTGRES_SEEDS=temporal-postgres
     depends_on:
-      postgres:
+      temporal-postgres:
         condition: service_healthy
 
   temporal-ui:
-    image: temporalio/ui:2.31.2
+    image: temporalio/ui:2.34.0
     ports:
       - "8081:8080"
     environment:
@@ -63,7 +75,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/var/www/html
-    command: php artisan temporal:run
+    command: rr serve -c .rr.yaml
     env_file:
       - .env
     depends_on:
@@ -74,3 +86,4 @@ services:
 
 volumes:
   pgdata:
+  temporal_pgdata:
